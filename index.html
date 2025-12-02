@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa de Chile</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: transparent;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+        #map {
+            width: 900px;
+            height: 1100px;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+        }
+        .leaflet-control-attribution {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+
+    <script>
+        // Información de pueblos originarios
+        const regionesInfo = {
+            'atacama': { pueblo: 'Diaguita', info: 'Pueblo originario del norte de Chile. Agricultores, alfareros y tejedores con una rica tradición cultural.' },
+            'coquimbo': { pueblo: 'Diaguita', info: 'Pueblo originario del norte de Chile. Agricultores, alfareros y tejedores con una rica tradición cultural.' },
+            'araucania': { pueblo: 'Mapuche', info: 'Pueblo originario del sur de Chile. Guerreros y cultivadores de la tierra, conocidos por su resistencia y tradiciones ancestrales.' },
+            'losrios': { pueblo: 'Mapuche', info: 'Pueblo originario del sur de Chile. Guerreros y cultivadores de la tierra, conocidos por su resistencia y tradiciones ancestrales.' },
+            'loslakos': { pueblo: 'Mapuche', info: 'Pueblo originario del sur de Chile. Guerreros y cultivadores de la tierra, conocidos por su resistencia y tradiciones ancestrales.' },
+            'nuble': { pueblo: 'Mapuche', info: 'Pueblo originario del sur de Chile. Guerreros y cultivadores de la tierra, conocidos por su resistencia y tradiciones ancestrales.' },
+            'magallanes': { pueblo: 'Selk\'Nam', info: 'Pueblo originario de Tierra del Fuego. Cazadores y pescadores adaptados al clima extremo de la Patagonia austral.' }
+        };
+
+        function showTooltip(info) {
+            hideTooltip();
+            const tooltip = document.createElement('div');
+            tooltip.id = 'pueblo-tooltip';
+            tooltip.style.cssText = `
+                position: fixed;
+                background-color: rgba(0, 212, 255, 0.95);
+                color: #000;
+                padding: 15px 20px;
+                border-radius: 8px;
+                font-size: 14px;
+                z-index: 10000;
+                max-width: 320px;
+                max-height: 200px;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+                pointer-events: none;
+                font-family: Arial, sans-serif;
+                overflow: hidden;
+            `;
+            tooltip.innerHTML = `
+                <div style="font-weight: bold; font-size: 16px; margin-bottom: 8px; border-bottom: 2px solid #000; padding-bottom: 8px;">
+                    ${info.pueblo}
+                </div>
+                <div style="line-height: 1.4; font-size: 13px;">
+                    ${info.info}
+                </div>
+            `;
+            document.body.appendChild(tooltip);
+        }
+
+        function hideTooltip() {
+            const tooltip = document.getElementById('pueblo-tooltip');
+            if (tooltip) tooltip.remove();
+        }
+
+        document.addEventListener('mousemove', function(e) {
+            const tooltip = document.getElementById('pueblo-tooltip');
+            if (tooltip) {
+                let left = e.clientX + 15;
+                let top = e.clientY + 15;
+                
+                // Asegurar que la tarjeta no se salga de la pantalla
+                if (left + 320 > window.innerWidth) {
+                    left = e.clientX - 340;
+                }
+                if (top + 200 > window.innerHeight) {
+                    top = e.clientY - 220;
+                }
+                
+                tooltip.style.left = left + 'px';
+                tooltip.style.top = top + 'px';
+            }
+        });
+
+        // Crear el mapa con solo Chile
+        const map = L.map('map', {
+            center: [-35, -71],
+            zoom: 4.5,
+            scrollWheelZoom: false,
+            dragging: false,
+            zoomControl: false,
+            attributionControl: false
+        });
+
+        // Capa base - solo Chile en oscuro
+        L.tileLayer('https://tiles.stadiamaps.com/tiles/stamen_toner_background/{z}/{x}/{y}.png', {
+            attribution: '',
+            maxZoom: 19
+        }).addTo(map);
+
+        // Agregar solo Chile con color negro
+        L.tileLayer('https://tiles.stadiamaps.com/tiles/stamen_toner_lines/{z}/{x}/{y}.png', {
+            attribution: '',
+            maxZoom: 19,
+            tint: '#00d4ff'
+        }).addTo(map);
+
+        // Coordenadas aproximadas de regiones con información - más separadas
+        const regiones = [
+            {
+                name: 'Atacama',
+                coords: [[-27.3627, -70.3320]],
+                region: 'atacama',
+                offset: [0, 1.5]
+            },
+            {
+                name: 'Coquimbo',
+                coords: [[-30.2591, -71.5382]],
+                region: 'coquimbo',
+                offset: [1.3, 0]
+            },
+            {
+                name: 'La Araucanía',
+                coords: [[-37.8687, -71.5430]],
+                region: 'araucania',
+                offset: [-1.3, 0]
+            },
+            {
+                name: 'Los Ríos',
+                coords: [[-39.8195, -72.0852]],
+                region: 'losrios',
+                offset: [0, -1.3]
+            },
+            {
+                name: 'Los Lagos',
+                coords: [[-41.4768, -72.2622]],
+                region: 'loslakos',
+                offset: [1.3, 0]
+            },
+            {
+                name: 'Ñuble',
+                coords: [[-36.7268, -71.9404]],
+                region: 'nuble',
+                offset: [-1.2, 1.2]
+            },
+            {
+                name: 'Magallanes',
+                coords: [[-52.3104, -70.9102]],
+                region: 'magallanes',
+                offset: [0, 2]
+            }
+        ];
+
+        // Crear rectángulos interactivos para cada región - más pequeños
+        regiones.forEach(region => {
+            const centerLat = region.coords[0][0] + (region.offset[0] || 0);
+            const centerLon = region.coords[0][1] + (region.offset[1] || 0);
+            
+            const bounds = [
+                [centerLat - 0.9, centerLon - 0.9],
+                [centerLat + 0.9, centerLon + 0.9]
+            ];
+
+            const rect = L.rectangle(bounds, {
+                color: '#00d4ff',
+                weight: 2,
+                opacity: 1,
+                fill: true,
+                fillColor: '#000000',
+                fillOpacity: 0.7
+            }).addTo(map);
+
+            rect.on('mouseover', function() {
+                this.setStyle({
+                    fillColor: '#00d4ff',
+                    fillOpacity: 0.9
+                });
+                if (regionesInfo[region.region]) {
+                    showTooltip(regionesInfo[region.region]);
+                }
+            });
+
+            rect.on('mouseout', function() {
+                this.setStyle({
+                    fillColor: '#000000',
+                    fillOpacity: 0.7
+                });
+                hideTooltip();
+            });
+        });
+    </script>
+</body>
+</html>
+</body>
+</html>
