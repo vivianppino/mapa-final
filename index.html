@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mapa de Chile</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         body {
             margin: 0;
@@ -30,7 +30,7 @@
 <body>
     <div id="map"></div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
         // Información de pueblos originarios
@@ -100,25 +100,21 @@
 
         // Crear el mapa con solo Chile
         const map = L.map('map', {
-            center: [-35, -71],
-            zoom: 4.5,
+            center: [-30, -71],
+            zoom: 4,
             scrollWheelZoom: false,
             dragging: false,
             zoomControl: false,
-            attributionControl: false
+            attributionControl: false,
+            maxBounds: [[-58, -77], [-17, -66]],
+            maxBoundsViscosity: 1.0
         });
 
         // Capa base - solo Chile en oscuro
-        L.tileLayer('https://tiles.stadiamaps.com/tiles/stamen_toner_background/{z}/{x}/{y}.png', {
-            attribution: '',
-            maxZoom: 19
-        }).addTo(map);
-
-        // Agregar solo Chile con color negro
-        L.tileLayer('https://tiles.stadiamaps.com/tiles/stamen_toner_lines/{z}/{x}/{y}.png', {
+        L.tileLayer('https://tiles.stadiamaps.com/tiles/stamen_toner/{z}/{x}/{y}.png', {
             attribution: '',
             maxZoom: 19,
-            tint: '#00d4ff'
+            minZoom: 4
         }).addTo(map);
 
         // Coordenadas aproximadas de regiones con información - más separadas
